@@ -1,14 +1,6 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
-apply plugin: "io.sentry.android.gradle"
-
-project.ext.sentryCli = [
-    logLevel: "debug",
-    flavorAware: false
-]
-
-apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
 
 project.ext.defaultEnvFile = ".env.debug"
 project.ext.envConfigFiles = [
@@ -152,23 +144,6 @@ android {
             signingConfig signingConfigs.upload
         }
     }
-}
-
-sentry {
-    autoUploadProguardMapping = shouldSentryAutoUpload()
-
-    // Enables or disables the automatic configuration of Native Symbols
-    // for Sentry. This executes sentry-cli automatically so
-    // you don't need to do it manually.
-    // Default is disabled.
-    uploadNativeSymbols = shouldSentryAutoUpload()
-
-    // Enables or disables the automatic upload of the app's native source code to Sentry.
-    // This executes sentry-cli with the --include-sources param automatically so
-    // you don't need to do it manually.
-    // This option has an effect only when [uploadNativeSymbols] is enabled.
-    // Default is disabled.
-    includeNativeSources = shouldSentryAutoUpload()
 }
 
 dependencies {

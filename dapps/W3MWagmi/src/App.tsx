@@ -2,7 +2,7 @@ import 'text-encoding';
 import '@walletconnect/react-native-compat';
 
 import React, {useEffect} from 'react';
-import {Linking, Platform} from 'react-native';
+import {Linking} from 'react-native';
 import BootSplash from 'react-native-bootsplash';
 import {createAppKit, AppKit, AppKitProvider, solana, bitcoin} from '@reown/appkit-react-native';
 import {WagmiAdapter} from '@reown/appkit-wagmi-react-native';
@@ -17,9 +17,7 @@ import { MMKV } from 'react-native-mmkv';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import Toast from 'react-native-toast-message';
-import Config from 'react-native-config';
 import Clipboard from '@react-native-clipboard/clipboard';
-import * as Sentry from '@sentry/react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 
@@ -29,31 +27,8 @@ import {chains} from '@/utils/WagmiUtils';
 import SettingsStore from '@/stores/SettingsStore';
 import { storage } from './utils/StorageUtil';
 
-Sentry.init({
-  enabled: !__DEV__ && !!Config.ENV_SENTRY_DSN,
-  dsn: Config.ENV_SENTRY_DSN,
-  environment: Config.ENV_SENTRY_TAG,
-  sendDefaultPii: true,
-  // Enable Logs
-  enableLogs: true,
-
-  // Temporarily disable native for Android, not sure why it's not working
-  enableNative: Platform.OS === 'ios',
-
-  // Configure Session Replay
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1,
-
-  tracesSampleRate: 0.5,
-  profilesSampleRate: 1.0,
-  integrations: [Sentry.mobileReplayIntegration()],
-
-  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
-  // spotlight: __DEV__,
-});
-
 // 1. Get projectId
-const projectId = Config.ENV_PROJECT_ID;
+const projectId = '25ded84b1eb0278f45c91ae6b740c71f'; // Config.ENV_PROJECT_ID;
 
 // 2. Create config
 const metadata = getMetadata();
@@ -138,4 +113,4 @@ function App(): JSX.Element {
   );
 }
 
-export default Sentry.wrap(App);
+export default App;

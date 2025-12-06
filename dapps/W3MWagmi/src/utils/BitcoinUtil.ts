@@ -1,10 +1,48 @@
 import ecc from '@bitcoinerlab/secp256k1';
 import * as bitcoin from 'bitcoinjs-lib';
 
-// @ts-ignore
-import * as bitcoinPSBTUtils from 'bitcoinjs-lib/src/cjs/psbt/psbtutils';
-
 import type {CaipNetworkId} from '@reown/appkit-common-react-native';
+
+// Script type detection utilities (replaces bitcoinjs-lib internal psbtutils)
+const scriptUtils = {
+  isP2PKH(script: Uint8Array): boolean {
+    return script.length === 25 &&
+           script[0] === 0x76 && // OP_DUP
+           script[1] === 0xa9 && // OP_HASH160
+           script[2] === 0x14 && // 20 bytes
+           script[23] === 0x88 && // OP_EQUALVERIFY
+           script[24] === 0xac; // OP_CHECKSIG
+  },
+  isP2WPKH(script: Uint8Array): boolean {
+    return script.length === 22 &&
+           script[0] === 0x00 && // witness v0
+           script[1] === 0x14; // 20 bytes
+  },
+  isP2WSHScript(script: Uint8Array): boolean {
+    return script.length === 34 &&
+           script[0] === 0x00 && // witness v0
+           script[1] === 0x20; // 32 bytes
+  },
+  isP2SHScript(script: Uint8Array): boolean {
+    return script.length === 23 &&
+           script[0] === 0xa9 && // OP_HASH160
+           script[1] === 0x14 && // 20 bytes
+           script[22] === 0x87; // OP_EQUAL
+  },
+  isP2TR(script: Uint8Array): boolean {
+    return script.length === 34 &&
+           script[0] === 0x51 && // witness v1
+           script[1] === 0x20; // 32 bytes
+  },
+  isP2PK(script: Uint8Array): boolean {
+    return (script.length === 35 || script.length === 67) &&
+           script[script.length - 1] === 0xac; // OP_CHECKSIG
+  },
+  isP2MS(_script: Uint8Array): boolean {
+    // P2MS (multisig) is rarely used directly, simplified check
+    return false;
+  },
+};
 import { bitcoinTestnet as bitcoinTestnetNetwork } from '@reown/appkit-react-native';
 
 bitcoin.initEccLib(ecc);
@@ -162,19 +200,19 @@ export const BitcoinUtil = {
   ): bitcoin.payments.Payment {
     const output = bitcoin.address.toOutputScript(address, network);
 
-    if (bitcoinPSBTUtils.isP2MS(output)) {
+    if (scriptUtils.isP2MS(output)) {
       return bitcoin.payments.p2ms({ output, network });
-    } else if (bitcoinPSBTUtils.isP2PK(output)) {
+    } else if (scriptUtils.isP2PK(output)) {
       return bitcoin.payments.p2pk({ output, network });
-    } else if (bitcoinPSBTUtils.isP2PKH(output)) {
+    } else if (scriptUtils.isP2PKH(output)) {
       return bitcoin.payments.p2pkh({ output, network });
-    } else if (bitcoinPSBTUtils.isP2WPKH(output)) {
+    } else if (scriptUtils.isP2WPKH(output)) {
       return bitcoin.payments.p2wpkh({ output, network });
-    } else if (bitcoinPSBTUtils.isP2WSHScript(output)) {
+    } else if (scriptUtils.isP2WSHScript(output)) {
       return bitcoin.payments.p2wsh({ output, network });
-    } else if (bitcoinPSBTUtils.isP2SHScript(output)) {
+    } else if (scriptUtils.isP2SHScript(output)) {
       return bitcoin.payments.p2sh({ output, network });
-    } else if (bitcoinPSBTUtils.isP2TR(output)) {
+    } else if (scriptUtils.isP2TR(output)) {
       return bitcoin.payments.p2tr({ output, network });
     }
 
